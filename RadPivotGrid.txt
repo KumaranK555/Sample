@@ -1,0 +1,64 @@
+RadPivotGrid pivotGrid = new RadPivotGrid();
+                //pivotGrid.RowGroupsDefaultExpanded = false;
+                //pivotGrid.ColumnGroupsDefaultExpanded = false;
+                pivotGrid.ID = "RadPivotGrid1";
+                pivotGrid.EmptyValue = "-";
+                pivotGrid.AllowPaging = true;
+                pivotGrid.PageSize = 50;
+                pivotGrid.PagerStyle.Mode = PivotGridPagerMode.NextPrevAndNumeric;
+                pivotGrid.Height = new Unit(500);
+                pivotGrid.AllowFiltering = true;
+                pivotGrid.AllowSorting = true;
+                pivotGrid.ShowFilterHeaderZone = false;
+                pivotGrid.ColumnHeaderCellStyle.Width = new Unit(90);
+
+                pivotGrid.Skin = "Office2010Blue";
+                pivotGrid.ClientSettings.EnableFieldsDragDrop = true;
+                pivotGrid.ClientSettings.Scrolling.AllowVerticalScroll = true;
+
+                if (dt.Rows.Count > 0)
+                {
+                    PivotGridColumnField columnField;
+                    PivotGridAggregateField aggregateField;
+                    PivotGridRowField rowField;
+
+                    foreach (DataRow dr in dtConfiguration.Rows)
+                    {
+                        if (dr["RowFieldName"].ToString() != "")
+                        {
+                            if (dr["RowFieldName"].ToString() == "Dates")
+                            {
+                                rowField = new PivotGridRowField();
+                                rowField.DataField = dr["RowFieldName"].ToString().ToUpper();
+                                rowField.UniqueName = dr["RowFieldName"].ToString();
+                                rowField.DataFormatString = "{0:dd MMM yyyy}";
+                                pivotGrid.Fields.Add(rowField);
+                            }
+                            else
+                            {
+                                rowField = new PivotGridRowField();
+                                rowField.DataField = dr["RowFieldName"].ToString().ToUpper();
+                                rowField.UniqueName = dr["RowFieldName"].ToString();
+                                pivotGrid.Fields.Add(rowField);
+                            }
+                        }
+                        else if (dr["ColumnFieldName"].ToString() != "")
+                        {
+                            columnField = new PivotGridColumnField();
+                            columnField.DataField = dr["ColumnFieldName"].ToString().ToUpper();
+                            columnField.UniqueName = dr["ColumnFieldName"].ToString().ToUpper();
+                            columnField.SortOrder = PivotGridSortOrder.None;
+                            //columnField.GroupDescription.CustomName = dr["ColumnFieldName"].ToString();
+                            pivotGrid.Fields.Add(columnField);
+                        }
+                        else
+                        {
+                            aggregateField = new PivotGridAggregateField();
+                            aggregateField.DataField = dr["AggregateFiledName"].ToString();//.ToUpper();
+                            aggregateField.UniqueName = dr["AggregateFiledName"].ToString();//.Replace(" ","");
+                            //aggregateField.Aggregate = PivotGridAggregate.sum;
+                            pivotGrid.Fields.Add(aggregateField);
+                        }
+                    }
+                }
+                pivotGrid.DataSource = dt;
