@@ -1,9 +1,0 @@
-I am facing one problem with telerik radpivotgrid.  Please find the image with name "dataset.png",  which is the datasource I am assigning.
-
-From datatable you can find four columns as STATE_LINK, LINKCITY1, ConsumptionQTY And ConsumptionRate. I am assigning STATE_LINK And LINKCITY1 As Rowfield And Other Two Column As Column Field, but I am getting result as shown in image "TelerikResult.png".
-
-In Result column value is not displaying. I need to show it as the image "RequiredResult.png".
-
-Only RowField shold get grouped and column field should not be grouped.
-
-Is there any possibility to avoid grouping column field in radpivotgrid?
