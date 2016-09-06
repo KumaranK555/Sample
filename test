@@ -1,0 +1,125 @@
+protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            //gvCustomers.DataSource = GetData("select * from  sheet1$");
+            //gvCustomers.DataBind();
+            int increment = 0;
+            DataTable dtmain = GetData("select * from  sheet1$");
+            DataTable tablenewf4 = new DataTable();
+	        tablenewf4.Columns.Add("Head", typeof(string));
+	        tablenewf4.Columns.Add("Months", typeof(string));
+	        tablenewf4.Columns.Add("Total", typeof(string));
+            tablenewf4.Columns.Add("Group", typeof(string));
+            
+
+             //string[] selectedColumns = new[] { "NEWF2" };
+             //DataTable dt = new DataView(dtmain).ToTable(false, selectedColumns);
+
+            int finaltotal = 0;
+             for (int i = 0; i < dtmain.Rows.Count; i++)
+             {
+                 
+                   string title = dtmain.Rows[i]["Newf2"].ToString();                
+                     bool exists = tablenewf4.AsEnumerable().Where(c => c.Field<string>("Head").Equals(title)).Count() > 0;
+                     if (exists == false)
+                     {
+
+                         increment = 0;
+                         tablenewf4.Rows.Add(dtmain.Rows[i]["Newf2"].ToString(), dtmain.Rows[i]["Months"].ToString(), 0, "NEWF2");
+                         int total = 0;
+                         // finaltotal = finaltotal + Convert.ToDecimal(dtmain.Rows[i]["Budget"].ToString());
+                         var items = dtmain.Select("Newf2 = '" + title + "'").Distinct().ToList();
+
+                         for (int j = 0; j < items.Count(); j++)
+                         {
+                            
+                             string title1 = items[j]["Newf3"].ToString();
+                             bool exists1 = tablenewf4.AsEnumerable().Where(c => c.Field<string>("Head").Equals(title1)).Count() > 0;
+                             if (exists1 == false)
+                             {
+                                 tablenewf4.Rows.Add(items[j]["Newf3"].ToString(), items[j]["Months"].ToString(), items[j]["Budget"].ToString(), "NEWF3");
+                                 //total = total + Convert.ToDecimal(items[j]["Budget"].ToString());
+                                 // finaltotal = finaltotal + Convert.ToDecimal(items[j]["Budget"].ToString());
+                                 var items1 = dtmain.Select("Newf2 = '" + title + "' and Newf3 ='" + title1 + "'");
+                                 for (int k = 0; k < items1.Count(); k++)
+                                 {
+                                     tablenewf4.Rows.Add(items1[k]["Newf4"].ToString(), items1[k]["Months"].ToString(), items1[k]["Budget"].ToString(), "NEWF4");
+                                     total = total + Convert.ToInt32(items1[k]["Budget"].ToString());
+                                     // finaltotal = finaltotal + total;
+                                 }
+
+                                 DataRow dr1 = tablenewf4.Select("Head = '" + title1 + "'").FirstOrDefault(); // finds all rows with id==2 and selects first or null if haven't found any
+                                 if (dr1 != null)
+                                 {
+                                     dr1["Total"] = total; //changes the Product_name                                 
+                                     finaltotal = finaltotal + total;
+                                     total = 0;
+
+                                 }
+                             }
+                             else
+                             {
+                                
+                                 if(title == title1 && increment == 0)
+                                 {
+                                     var items1 = dtmain.Select("Newf2 = '" + title + "' and Newf3 ='" + title1 + "'");
+                                     for (int k = 0; k < items1.Count(); k++)
+                                     {
+                                         tablenewf4.Rows.Add(items1[k]["Newf4"].ToString(), items1[k]["Months"].ToString(), items1[k]["Budget"].ToString(), "NEWF4");
+                                         total = total + Convert.ToInt32(items1[k]["Budget"].ToString());
+                                         // finaltotal = finaltotal + total;
+                                     }
+
+                                     DataRow dr1 = tablenewf4.Select("Head = '" + title1 + "'").FirstOrDefault(); // finds all rows with id==2 and selects first or null if haven't found any
+                                     if (dr1 != null)
+                                     {
+                                         dr1["Total"] = total; //changes the Product_name                                        
+                                         finaltotal = finaltotal + total;
+                                         total = 0;
+
+                                     }
+                                     increment++;
+                                 }
+                             }
+                         }
+
+                         DataRow dr = tablenewf4.Select("Head = '" + title + "'").FirstOrDefault(); // finds all rows with id==2 and selects first or null if haven't found any
+                         if (dr != null)
+                         {
+                             dr["Total"] = finaltotal; //changes the Product_name
+                             finaltotal = 0;
+                         }
+                     }
+
+                 
+                
+             }
+             gvCustomers.DataSource = tablenewf4;
+             gvCustomers.DataBind();
+           
+        }
+    }
+
+    private static DataTable GetData(string query)
+    {
+        string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(constr))
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.CommandText = query;
+                using (SqlDataAdapter sda = new SqlDataAdapter())
+                {
+                    cmd.Connection = con;
+                    sda.SelectCommand = cmd;
+                    using (DataSet ds = new DataSet())
+                    {
+                        DataTable dt = new DataTable();
+                        sda.Fill(dt);
+                        return dt;
+                    }
+                }
+            }
+        }
+    }
