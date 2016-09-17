@@ -1,0 +1,39 @@
+ protected void ExportExcel(object sender, EventArgs e)
+    {
+        DataTable dt = new DataTable("GridView_Data");
+        GridView gvOrders = (GridView)gvCustomers.Rows[1].FindControl("gvOrders");
+        foreach (TableCell cell in gvCustomers.HeaderRow.Cells)
+        {
+            dt.Columns.Add(cell.Text);
+        }
+        foreach (TableCell cell in gvOrders.HeaderRow.Cells)
+        {
+            dt.Columns.Add(cell.Text);
+        }
+        dt.Columns.RemoveAt(0);
+        foreach (GridViewRow row in gvCustomers.Rows)
+        {                    
+                GridView gvOrderscell = (row.FindControl("gvOrders") as GridView);
+                for (int j = 0; j < gvOrderscell.Rows.Count; j++)
+                {
+                    dt.Rows.Add(row.Cells[1].Text, row.Cells[2].Text, gvOrderscell.Rows[j].Cells[0].Text, gvOrderscell.Rows[j].Cells[1].Text);
+                }           
+        }
+        using (XLWorkbook wb = new XLWorkbook())
+        {
+            wb.Worksheets.Add(dt);
+ 
+            Response.Clear();
+            Response.Buffer = true;
+            Response.Charset = "";
+            Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            Response.AddHeader("content-disposition", "attachment;filename=GridView.xlsx");
+            using (MemoryStream MyMemoryStream = new MemoryStream())
+            {
+                wb.SaveAs(MyMemoryStream);
+                MyMemoryStream.WriteTo(Response.OutputStream);
+                Response.Flush();
+                Response.End();
+            }
+        }
+    }
