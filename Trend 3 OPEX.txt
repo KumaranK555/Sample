@@ -1,0 +1,35 @@
+WITH tBudget AS (  
+select Newf2,Newf3,Newf4,MONTHS,MAINSORTID,SUBASORTID, sum(CompanyCurrency_HSL) as Budget from GLPCP where Tabflag='Budget' 
+and Product !='JJ' and MONTHS='Apr' and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) group by Newf2,NEWF3,NEWF4,MONTHS, MAINSORTID,SUBASORTID
+),
+ tActual  as(
+select Newf2,Newf3,Newf4,MONTHS, MAINSORTID,SUBASORTID, sum(CompanyCurrency_HSL) as Actual from GLPCP where Tabflag='Actual'  
+and Product !='JJ' and MONTHS='Apr' and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) 
+group by Newf2,NEWF3,NEWF4,MONTHS, MAINSORTID,SUBASORTID
+ ),
+tJobWork as
+(
+ select Newf2,Newf3,Newf4,MONTHS, MAINSORTID,SUBASORTID, sum(CompanyCurrency_HSL) as JobWork from GLPCP where (Origin_RHOART ='03' or ORIGIN_RHOART='05')
+and Product !='JJ' and MONTHS='Apr' and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) 
+group by Newf2,NEWF3,NEWF4,MONTHS, MAINSORTID,SUBASORTID
+)
+select tBudget.Newf2,
+tBudget.Newf3,
+tBudget.NEWF4,
+tBudget.Months,
+Round(NVL(tBudget.Budget,0),0) as Budget,
+Round(NVL(tActual.Actual,0),0) as Actual,
+Round(NVL(tJobWork.JobWork,0) ,0) as JobWork,
+Round((NVL(tActual.Actual,0)) - (NVL(tJobWork.JobWork,0)),0) as AdjustedActual,
+Round((NVL(tBUDGET.BUDGET,0) - NVL(tACTUAL.ACTUAL,0) - (NVL(tJobWork.JobWork,0))),0) as Variance
+from tBudget left join tActual ON
+tBUDGET.NEWF2=tActual.NEWF2 and 
+tBUDGET.Newf3=tActual.Newf3 and
+tBUDGET.NEWF4=tActual.NEWF4 and
+tBUDGET.months=tActual.months 
+left join tJobWork on
+tBUDGET.NEWF2=tJobWork.NEWF2 and 
+tBUDGET.Newf3=tJobWork.Newf3 and
+tBUDGET.NEWF4=tJobWork.NEWF4 AND
+tBUDGET.months=tJobWork.months
+ORDER BY TBUDGET.MAINSORTID ASC, TBUDGET.SUBASORTID ASC
