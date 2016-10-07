@@ -1,121 +1,15 @@
-CREATE OR REPLACE 
-PROCEDURE "FETCHTRENDDATA" (P_Head IN NVARCHAR2, P_Account IN NVARCHAR2, 
-P_Profit IN NVARCHAR2, P_CostCenter IN NVARCHAR2, P_Level IN INT,
-ReportDetails OUT TYPES.cursortype)
-AS
-BEGIN
-	DECLARE
-	v_startDate VARCHAR2(100);
-  v_fiscalyear VARCHAR2(100);
-		BEGIN
-		SELECT DEFAULTFILTERVALUE INTO v_startDate FROM FILTERTABLE WHERE QUERYID = 201 
-		AND FILTERNAME = '{Month}';
-    
-    SELECT Max(FISCALYEAR_RYEAR) INTO v_fiscalyear FROM GLPCP;
+int fieldCount = csvReader.FieldCount;
+                string[] headers = csvReader.GetFieldHeaders();
 
-    IF (P_Level = 1)
-    THEN
-      BEGIN
-		   OPEN ReportDetails FOR
-		   WITH tBudget AS (  
-			 select ACCOUNTNUMBER_RACCT, sum(CompanyCurrency_HSL) as Budget from GLPCP where Tabflag='Budget' 
-			 and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) group by ACCOUNTNUMBER_RACCT 
-			 ), tActual  as(select ACCOUNTNUMBER_RACCT, sum(CompanyCurrency_HSL) as Actual from GLPCP where Tabflag='Actual'  
-			 and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) 
-       group by ACCOUNTNUMBER_RACCT), tJobWork as (
-			 select ACCOUNTNUMBER_RACCT, sum(CompanyCurrency_HSL) as JobWork from GLPCP where (Origin_RHOART ='03' or ORIGIN_RHOART='05') AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head)
-			 and Product !='JJ' and MONTHS=v_startDate and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) 
-			 group by ACCOUNTNUMBER_RACCT ) select tBudget.ACCOUNTNUMBER_RACCT,
-			 Round(NVL(tBudget.Budget,0),0) as Budget,
-       Round(NVL(tActual.Actual,0),0) as Actual,
-       Round(NVL(tJobWork.JobWork,0) ,0) as JobWork,
-       Round((NVL(tActual.Actual,0)) - (NVL(tJobWork.JobWork,0)),0) as AdjustedActual,
-       Round((NVL(tBUDGET.BUDGET,0) - NVL(tACTUAL.ACTUAL,0) - (NVL(tJobWork.JobWork,0))),0) as Variance
-       from tBudget left join tActual ON tBUDGET.ACCOUNTNUMBER_RACCT=tActual.ACCOUNTNUMBER_RACCT 
-       LEFT JOIN tJobWork on tBUDGET.ACCOUNTNUMBER_RACCT=tJobWork.ACCOUNTNUMBER_RACCT;
-		  END; 
+                // this bit could be modified to fine-tune the columns
+                foreach (string headerLabel in headers)
+                    csvTable.Columns.Add(headerLabel, typeof(string));
 
-  ELSE IF (P_Level = 2)
-     THEN
-       BEGIN
-        OPEN ReportDetails FOR
-        WITH tBudget AS (  
-				select PROFITCENTER_RPRCTR, sum(CompanyCurrency_HSL) as Budget from GLPCP where Tabflag='Budget' 
-				and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) AND ACCOUNTNUMBER_RACCT = P_Account and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) group by PROFITCENTER_RPRCTR 
-				), tActual  as(select PROFITCENTER_RPRCTR, sum(CompanyCurrency_HSL) as Actual from GLPCP where Tabflag='Actual'  
-				and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) AND ACCOUNTNUMBER_RACCT = P_Account
-				group by PROFITCENTER_RPRCTR
-				),tJobWork as (select PROFITCENTER_RPRCTR, sum(CompanyCurrency_HSL) as JobWork from GLPCP where (Origin_RHOART ='03' or ORIGIN_RHOART='05') AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head)
-				and Product !='JJ' and MONTHS=v_startDate and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) AND ACCOUNTNUMBER_RACCT = P_Account
-				group by PROFITCENTER_RPRCTR ) select tBudget.PROFITCENTER_RPRCTR, Round(NVL(tBudget.Budget,0),0) as Budget,
-				Round(NVL(tActual.Actual,0),0) as Actual,
-				Round(NVL(tJobWork.JobWork,0) ,0) as JobWork,
-				Round((NVL(tActual.Actual,0)) - (NVL(tJobWork.JobWork,0)),0) as AdjustedActual,
-				Round((NVL(tBUDGET.BUDGET,0) - NVL(tACTUAL.ACTUAL,0) - (NVL(tJobWork.JobWork,0))),0) as Variance
-				from tBudget left join tActual ON
-				tBUDGET.PROFITCENTER_RPRCTR=tActual.PROFITCENTER_RPRCTR 
-				left join tJobWork on	
-				tBUDGET.PROFITCENTER_RPRCTR=tJobWork.PROFITCENTER_RPRCTR;
-       END;
-  
-  ELSE IF (P_Level = 3)
-    THEN
-      BEGIN
-        OPEN ReportDetails FOR
-        WITH tBudget AS (  
-				select COSTCENTER_KOSTL, sum(CompanyCurrency_HSL) as Budget from GLPCP where Tabflag='Budget' 
-				and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) AND ACCOUNTNUMBER_RACCT = P_Account AND PROFITCENTER_RPRCTR = P_Profit and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) group by COSTCENTER_KOSTL 
-				), tActual  as(
-				select COSTCENTER_KOSTL, sum(CompanyCurrency_HSL) as Actual from GLPCP where Tabflag='Actual'  
-				and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) AND ACCOUNTNUMBER_RACCT = P_Account AND PROFITCENTER_RPRCTR = P_Profit
-				group by COSTCENTER_KOSTL ), tJobWork as (
-				select COSTCENTER_KOSTL, sum(CompanyCurrency_HSL) as JobWork from GLPCP where (Origin_RHOART ='03' or ORIGIN_RHOART='05') AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head)
-				and Product !='JJ' and MONTHS=v_startDate and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) AND ACCOUNTNUMBER_RACCT = P_Account AND PROFITCENTER_RPRCTR = P_Profit
-				group by COSTCENTER_KOSTL) select tBudget.COSTCENTER_KOSTL, Round(NVL(tBudget.Budget,0),0) as Budget,
-				Round(NVL(tActual.Actual,0),0) as Actual,
-				Round(NVL(tJobWork.JobWork,0) ,0) as JobWork,
-				Round((NVL(tActual.Actual,0)) - (NVL(tJobWork.JobWork,0)),0) as AdjustedActual,
-				Round((NVL(tBUDGET.BUDGET,0) - NVL(tACTUAL.ACTUAL,0) - (NVL(tJobWork.JobWork,0))),0) as Variance
-				from tBudget left join tActual ON
-				tBUDGET.COSTCENTER_KOSTL=tActual.COSTCENTER_KOSTL 
-				left join tJobWork on
-				tBUDGET.COSTCENTER_KOSTL=tJobWork.COSTCENTER_KOSTL ;
-      END;
+                while (csvReader.ReadNextRecord())
+                {
+                    DataRow newRow = csvTable.NewRow();
+                    // this bit could be modified to do type conversions, skip columns, etc
+                    for (int i = 0; i < fieldCount; i++)
+                        newRow[i] = csvReader[i];
 
-  ELSE IF (P_Level = 4)
-    THEN
-      BEGIN
-        OPEN ReportDetails FOR
-        WITH tBudget AS (  
-				select ORDERNUMBER, sum(CompanyCurrency_HSL) as Budget from GLPCP where Tabflag='Budget' 
-				and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) AND ACCOUNTNUMBER_RACCT = P_Account AND PROFITCENTER_RPRCTR = P_Profit AND PROFITCENTER_RPRCTR = P_Profit and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) group by ORDERNUMBER 
-				), tActual  as( select ORDERNUMBER, sum(CompanyCurrency_HSL) as Actual from GLPCP where Tabflag='Actual'  
-				and Product !='JJ' and MONTHS=v_startDate AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head) and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) AND ACCOUNTNUMBER_RACCT = P_Account AND PROFITCENTER_RPRCTR = P_Profit AND PROFITCENTER_RPRCTR = P_Profit
-				group by ORDERNUMBER), tJobWork as ( select ORDERNUMBER, sum(CompanyCurrency_HSL) as JobWork from GLPCP where (Origin_RHOART ='03' or ORIGIN_RHOART='05') AND (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head)
-				and Product !='JJ' and MONTHS=v_startDate and FISCALYEAR_RYEAR=(select Max(FISCALYEAR_RYEAR) from glpcp) AND ACCOUNTNUMBER_RACCT = P_Account AND PROFITCENTER_RPRCTR = P_Profit AND PROFITCENTER_RPRCTR = P_Profit
-				group by ORDERNUMBER ) select tBudget.ORDERNUMBER, Round(NVL(tBudget.Budget,0),0) as Budget,
-				Round(NVL(tActual.Actual,0),0) as Actual,
-				Round(NVL(tJobWork.JobWork,0) ,0) as JobWork,
-				Round((NVL(tActual.Actual,0)) - (NVL(tJobWork.JobWork,0)),0) as AdjustedActual,
-				Round((NVL(tBUDGET.BUDGET,0) - NVL(tACTUAL.ACTUAL,0) - (NVL(tJobWork.JobWork,0))),0) as Variance
-				from tBudget left join tActual ON
-				tBUDGET.ORDERNUMBER=tActual.ORDERNUMBER 
-				left join tJobWork on
-				tBUDGET.ORDERNUMBER=tJobWork.ORDERNUMBER ;
-      END;
-
-  ELSE
-    BEGIN
-	    OPEN ReportDetails FOR
-      SELECT ACCOUNTNUMBER_RACCT,PROFITCENTER_RPRCTR,COSTCENTER_KOSTL,ORDERNUMBER,
-	  	SUM(CompanyCurrency_HSL) AS Total FROM GLPCP WHERE TABFLAG='Actual'
-		  AND MONTHS = v_startDate AND FISCALYEAR_RYEAR = v_fiscalyear AND 
-		  (NEWF2 = P_Head or NEWF3 = P_Head or NEWF4 = P_Head)
-		  GROUP BY ACCOUNTNUMBER_RACCT,PROFITCENTER_RPRCTR,COSTCENTER_KOSTL,ORDERNUMBER;
-    END;
-  END IF; --condition finished in level 1
-  END IF; -- condition finished in level 2
-  END IF; -- condition finished in level 3
-  END IF; -- condition finished in level 4
-    END;
-END;
+                    csvTable.Rows.Add(newRow);
