@@ -1,0 +1,9 @@
+  if (response.d[i].Group == 'NEWF2') {
+                                html += "<tr  style='color: blue;font-weight:bold' class='section'><td>" + data.Head + "</td><td>" + data.Budget + "</td><td>" + data.Actual + "</td><td>" + data.Jobwork + "</td><td>" + data.AdjActual + "</td><td>" + data.variance + "</td><tr>";
+                            }
+                            else if (response.d[i].Group == 'NEWF3' && response.d[i].flag == 'false') {
+                                html += "<tr  style='color: red;font-weight:bold' class='section'><td>" + data.Head + "</td><td>" + data.Budget + "</td><td>" + data.Actual + "</td><td>" + data.Jobwork + "</td><td>" + data.AdjActual + "</td><td>" + data.variance + "</td><tr>";
+                            }
+                            else {
+                                html += "<tr  style='font-weight:bold' class='section'><td>" + data.Head + "</td><td>" + data.Budget + "</td><td>" + data.Actual + "</td><td>" + data.Jobwork + "</td><td>" + data.AdjActual + "</td><td>" + data.variance + "</td><tr>";
+                            }
