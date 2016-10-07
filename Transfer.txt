@@ -1,15 +1,11 @@
-int fieldCount = csvReader.FieldCount;
-                string[] headers = csvReader.GetFieldHeaders();
+Avaliablecreditlimit  --> QVD
+AvailableCreditLimit  --> SQL
 
-                // this bit could be modified to fine-tune the columns
-                foreach (string headerLabel in headers)
-                    csvTable.Columns.Add(headerLabel, typeof(string));
+CHQbounceratio     --> QVD
+ChequeBounceRatio  --> SQL
 
-                while (csvReader.ReadNextRecord())
-                {
-                    DataRow newRow = csvTable.NewRow();
-                    // this bit could be modified to do type conversions, skip columns, etc
-                    for (int i = 0; i < fieldCount; i++)
-                        newRow[i] = csvReader[i];
+CHQforAcceptenceCalender    --> QVD
+ChequeForAcceptenceCalender --> SQL
 
-                    csvTable.Rows.Add(newRow);
+CurrentFYandLast12Months --> QVD
+CurrentFyAndLast12Month --> SQL
