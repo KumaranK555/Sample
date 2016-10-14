@@ -9,3 +9,16 @@ ChequeForAcceptenceCalender --> SQL
 
 CurrentFYandLast12Months --> QVD
 CurrentFyAndLast12Month --> SQL
+
+
+$(function() {
+				$(".table2excel").table2excel({
+					exclude: ".noExl",
+					name: "Excel Document Name",
+					filename: "myFileName",
+					fileext: ".xls",
+					exclude_img: true,
+					exclude_links: true,
+					exclude_inputs: true
+				});
+			});
