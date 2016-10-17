@@ -1,24 +1,8 @@
-Avaliablecreditlimit  --> QVD
-AvailableCreditLimit  --> SQL
+function commaSeparateNumber(val){
+    while (/(\d+)(\d{3})/.test(val.toString())){
+      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+    }
+    return val;
+  }
 
-CHQbounceratio     --> QVD
-ChequeBounceRatio  --> SQL
-
-CHQforAcceptenceCalender    --> QVD
-ChequeForAcceptenceCalender --> SQL
-
-CurrentFYandLast12Months --> QVD
-CurrentFyAndLast12Month --> SQL
-
-
-$(function() {
-				$(".table2excel").table2excel({
-					exclude: ".noExl",
-					name: "Excel Document Name",
-					filename: "myFileName",
-					fileext: ".xls",
-					exclude_img: true,
-					exclude_links: true,
-					exclude_inputs: true
-				});
-			});
+commaSeparateNumber(1234567890)
