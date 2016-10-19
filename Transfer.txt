@@ -1,8 +1,2 @@
-function commaSeparateNumber(val){
-    while (/(\d+)(\d{3})/.test(val.toString())){
-      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
-    }
-    return val;
-  }
-
-commaSeparateNumber(1234567890)
+C:\ITMindMap\DBCLWebReports\DBCLWebReports1
+C:\Users\OPEX\Desktop\Sep10\DBCLWebReports1-sepo6
