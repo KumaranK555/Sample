@@ -1,2 +1,7 @@
-C:\ITMindMap\DBCLWebReports\DBCLWebReports1
-C:\Users\OPEX\Desktop\Sep10\DBCLWebReports1-sepo6
+$(function() {
+$('#btnClick').click(function() {
+$('#DisableDiv').fadeTo('slow', .6);
+$('#DisableDiv').append('<div style="background-color:#E6E6E6;position: absolute;top:0;left:0;width: 100%;height:300%;z-index:1001;-moz-opacity: 0.8;opacity:.80;filter: alpha(opacity=80);"><img src="loading.gif" style="background-color:Aqua;position:fixed; top:40%; left:46%;"/></div>');
+setTimeout(function() { GetData() }, 1000)
+})
+});
