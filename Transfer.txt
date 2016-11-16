@@ -1,7 +1,11 @@
-$(function() {
-$('#btnClick').click(function() {
-$('#DisableDiv').fadeTo('slow', .6);
-$('#DisableDiv').append('<div style="background-color:#E6E6E6;position: absolute;top:0;left:0;width: 100%;height:300%;z-index:1001;-moz-opacity: 0.8;opacity:.80;filter: alpha(opacity=80);"><img src="loading.gif" style="background-color:Aqua;position:fixed; top:40%; left:46%;"/></div>');
-setTimeout(function() { GetData() }, 1000)
-})
-});
+CREATE TABLE FilterTable
+( Id number(10) not null,
+  QueryID number(10) not null,
+  CONSTRAINT fk_FilterTable_queryTable
+    FOREIGN KEY (Id)
+    REFERENCES queryTable(Id),
+  FilterName nvarchar2(500) NOT NULL,
+   ColumnName nvarchar2(500) NOT NULL,
+   DefaultFilterValue nvarchar2(500) NOT NULL,
+ CONSTRAINT FilterTable_pk PRIMARY KEY (Id)
+);
