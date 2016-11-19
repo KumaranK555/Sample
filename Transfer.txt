@@ -9,3 +9,14 @@ CREATE TABLE FilterTable
    DefaultFilterValue nvarchar2(500) NOT NULL,
  CONSTRAINT FilterTable_pk PRIMARY KEY (Id)
 );
+
+
+<div id="divAnnualBudget" style="display: none; padding: 0px 15px;" runat="server">
+                            <table class="table table-striped table-bordered table-hover no-margin tab-blk tab_cls tblannualbudget tablefont"
+                                id="tblannualbudget" >
+                                <thead>
+                                    <tr class="OpexMISFont"></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
